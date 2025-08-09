@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Improved text contrast */
+.text-gray-600 {
+  color: #4b5563 !important; /* Darker gray for better contrast */
+}
+
+.text-gray-700 {
+  color: #374151 !important; /* Even darker gray for better contrast */
+}
+
+/* Improve contrast on dark backgrounds */
+.dark .text-gray-200 {
+  color: #e5e7eb !important; /* Lighter gray for dark mode */
+}
+
+.dark .text-gray-400 {
+  color: #d1d5db !important; /* Lighter gray for dark mode */
+}
+
+/* Improve contrast for text on colored backgrounds */
+.bg-white\/20 .text-white {
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Add text shadow for better readability */
+}
+
+/* Improve contrast for text on the backdrop */
+.backdrop-blur-md .text-gray-600,
+.backdrop-blur-md .text-gray-700 {
+  color: #1f2937 !important; /* Much darker gray for better contrast on blurred backgrounds */
+  font-weight: 500; /* Slightly bolder text */
+}
+
+@layer utilities {
+  .animate-slide-down {
+    opacity: 0;
+    transform: translateY(-1rem);
+    animation: slideDown 0.3s ease-in-out forwards;
+  }
+  .animate-pokeball-throw {
+    animation: pokeballThrow 1s ease-in-out 0s 1, pokeballSpin 1.2s linear 0s infinite;
+  }
+  
+  /* Text shadow utility for better readability on colored backgrounds */
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes slideDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 220ms ease-out both;
+}
+
+@keyframes pokeballThrow {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+  30% { transform: translate(120px, -140px) scale(1.1) rotate(90deg); }
+  60% { transform: translate(260px, -40px) scale(1) rotate(180deg); }
+  100% { transform: translate(420px, -180px) scale(1) rotate(360deg); opacity: 0; }
+}
+
+@keyframes pokeballSpin {
+  0% { filter: drop-shadow(0 0 0 rgba(0,0,0,0.3)); }
+  50% { filter: drop-shadow(0 6px 10px rgba(0,0,0,0.4)); }
+  100% { filter: drop-shadow(0 0 0 rgba(0,0,0,0.3)); }
+}

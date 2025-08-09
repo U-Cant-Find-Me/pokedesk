@@ -1,0 +1,12 @@
+{
+  "name": "Pokedesk – Next.js Pokédex",
+  "short_name": "Pokedesk",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#ef4444",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}
