@@ -1,47 +1,62 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-
-const images = [
-    "/poke0.png",
-    "/poke1.jpg",
-    "/poke2.png",
-    "/poke3.jpg",
-    "/poke4.jpg",
-    "/poke5.jpg",
-    "/poke6.jpg",
-    "/poke7.jpg",
-    "/poke8.jpg",
-    "/poke9.png",
-    "/poke10.png",
-    "/poke11.jpg",
-    "/eevee.png"
-];
+import React from "react";
 
 export default function BackgroundCarousel() {
-    const [current, setCurrent] = useState(0);
+  return (
+    <div className="fixed inset-0 -z-10 w-full h-full overflow-hidden bg-slate-50 dark:bg-gray-950 transition-colors duration-500">
+      {/* Animated glowing mesh gradient blobs */}
+      <div className="absolute inset-0 overflow-hidden opacity-40 dark:opacity-20 pointer-events-none">
+        {/* Blob 1 - Red (Pokeball theme) */}
+        <div 
+          className="absolute w-[500px] h-[500px] rounded-full bg-red-400 dark:bg-red-600/50 blur-[120px] animate-blob"
+          style={{
+            top: '-10%',
+            left: '10%',
+            animationDuration: '25s',
+          }}
+        />
+        {/* Blob 2 - Blue */}
+        <div 
+          className="absolute w-[600px] h-[600px] rounded-full bg-blue-400 dark:bg-blue-600/40 blur-[150px] animate-blob"
+          style={{
+            bottom: '10%',
+            right: '10%',
+            animationDuration: '30s',
+            animationDelay: '2s',
+          }}
+        />
+        {/* Blob 3 - Yellow */}
+        <div 
+          className="absolute w-[400px] h-[400px] rounded-full bg-yellow-300 dark:bg-yellow-500/30 blur-[100px] animate-blob"
+          style={{
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            animationDuration: '20s',
+            animationDelay: '5s',
+          }}
+        />
+        {/* Blob 4 - Purple */}
+        <div 
+          className="absolute w-[500px] h-[500px] rounded-full bg-purple-400 dark:bg-purple-600/30 blur-[130px] animate-blob"
+          style={{
+            bottom: '-10%',
+            left: '-10%',
+            animationDuration: '28s',
+            animationDelay: '1s',
+          }}
+        />
+      </div>
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % images.length);
-        }, 5000); // 5 seconds
-        return () => clearInterval(interval);
-    }, []);
+      {/* Subtle overlay grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
 
-    return (
-        <div className="fixed inset-0 -z-10 w-full h-full overflow-hidden">
-            {images.map((src, idx) => (
-                <Image
-                    key={src}
-                    src={src}
-                    alt="Pokémon background"
-                    fill
-                    className={`object-cover transition-opacity duration-1000 ${idx === current ? 'opacity-100' : 'opacity-0'}`}
-                    priority={idx === 0}
-                />
-            ))}
-            <div className="absolute inset-0 bg-white/75 dark:bg-black/75 pointer-events-none" />
-        </div>
-    );
+      {/* Radial soft vignetting vignette overlay */}
+      <div className="absolute inset-0 bg-radial-[circle_at_center,transparent_20%,rgba(255,255,255,0.2)_100%] dark:bg-radial-[circle_at_center,transparent_20%,rgba(3,7,18,0.4)_100%] pointer-events-none" />
+      
+      {/* Blurred glass container overlay */}
+      <div className="absolute inset-0 bg-white/40 dark:bg-gray-950/40 backdrop-blur-[1px] pointer-events-none" />
+    </div>
+  );
 }

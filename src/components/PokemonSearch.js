@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import pokemonDataset from '../data/pokemon-dataset.json';
 
 export default function PokemonSearch({ onSearch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [allNames, setAllNames] = useState([]);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Load all sorted Pokémon names instantly from the offline dataset
+  const allNames = useMemo(() => {
+    return (pokemonDataset || []).map((p) => p.name).sort();
+  }, []);
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -21,32 +26,13 @@ export default function PokemonSearch({ onSearch }) {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const ensureNamesLoaded = async () => {
-    if (allNames.length > 0) return;
-    try {
-      const cached = typeof window !== 'undefined' ? sessionStorage.getItem('pokemonNameListV1') : null;
-      if (cached) {
-        setAllNames(JSON.parse(cached));
-        return;
-      }
-      const res = await fetch(`/api/pokemon?limit=2000&offset=0`);
-      if (!res.ok) throw new Error('Failed to load names');
-      const data = await res.json();
-      const names = (data.results || []).map((r) => r.name).sort();
-      setAllNames(names);
-      try { sessionStorage.setItem('pokemonNameListV1', JSON.stringify(names)); } catch {}
-    } catch (e) {
-      // non-fatal; just skip suggestions
-    }
-  };
-
-  const filtered = (() => {
+  const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return [];
     const starts = allNames.filter((n) => n.startsWith(q));
     const contains = allNames.filter((n) => !n.startsWith(q) && n.includes(q));
     return [...starts, ...contains].slice(0, 10);
-  })();
+  }, [searchTerm, allNames]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,11 +85,11 @@ export default function PokemonSearch({ onSearch }) {
             type="text"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setOpen(true); }}
-            onFocus={() => { ensureNamesLoaded(); setOpen(true); }}
+            onFocus={() => { setOpen(true); }}
             onKeyDown={onKeyDown}
             placeholder="Search by name or ID (e.g., 'Pikachu' or '25')"
             aria-label="Search Pokémon by name or ID"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-white placeholder-gray-500 font-medium"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-medium shadow-sm transition-all duration-200"
             disabled={isLoading}
             autoComplete="off"
           />
@@ -113,13 +99,16 @@ export default function PokemonSearch({ onSearch }) {
             </div>
           )}
           {open && filtered.length > 0 && (
-            <ul role="listbox" className="absolute z-50 mt-1 w-full max-h-64 overflow-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+            <ul 
+              role="listbox" 
+              className="absolute z-50 mt-1 w-full max-h-64 overflow-auto bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl backdrop-blur-md"
+            >
               {filtered.map((name, idx) => (
                 <li
                   key={name}
                   role="option"
                   aria-selected={highlight === idx}
-                  className={`px-3 py-2 cursor-pointer capitalize ${highlight === idx ? 'bg-red-100 dark:bg-gray-700' : 'hover:bg-gray-100 dark:hover:bg-gray-800'} text-gray-900 dark:text-gray-100 border-b border-white/30 last:border-b-0`}
+                  className={`px-4 py-2 cursor-pointer capitalize font-medium ${highlight === idx ? 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200'} border-b border-black/5 dark:border-white/5 last:border-b-0`}
                   onMouseEnter={() => setHighlight(idx)}
                   onMouseDown={(e) => { e.preventDefault(); setSearchTerm(name); setOpen(false); onSearch(name); }}
                 >
@@ -131,7 +120,7 @@ export default function PokemonSearch({ onSearch }) {
         </div>
         <button
           type="submit"
-          className="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 active:scale-98 transition-all duration-200 shadow-md shadow-red-500/10 hover:shadow-red-500/30 disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed"
           disabled={isLoading || !searchTerm.trim()}
         >
           Search

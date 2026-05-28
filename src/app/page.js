@@ -78,7 +78,7 @@ function Home() {
 
       // Start fetch immediately while also waiting a minimum overlay duration
       const fetchPromise = getPokemon(query);
-      const delayPromise = new Promise((resolve) => setTimeout(resolve, 3000));
+      const delayPromise = new Promise((resolve) => setTimeout(resolve, 600));
       const [data] = await Promise.all([fetchPromise, delayPromise]);
 
       setPokemon(data);
