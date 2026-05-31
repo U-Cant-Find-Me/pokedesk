@@ -184,12 +184,12 @@ const ALL_SPECIALS_LIST = ['legendary', 'fossil', 'dual_type', 'single_type'];
 
 function encodeRoomCode(seed, gens, types, specials) {
   let mask = 0;
-  
+
   // Gens: bits 0-8
   gens.forEach(g => {
     mask |= (1 << (g - 1));
   });
-  
+
   // Types: bits 9-26
   types.forEach(t => {
     const idx = ALL_TYPES_LIST.indexOf(t);
@@ -197,7 +197,7 @@ function encodeRoomCode(seed, gens, types, specials) {
       mask |= (1 << (9 + idx));
     }
   });
-  
+
   // Specials: bits 27-30
   specials.forEach(s => {
     const idx = ALL_SPECIALS_LIST.indexOf(s);
@@ -205,7 +205,7 @@ function encodeRoomCode(seed, gens, types, specials) {
       mask |= (1 << (27 + idx));
     }
   });
-  
+
   const maskHex = mask.toString(16).toUpperCase();
   const seedHex = Math.floor(seed).toString(16).toUpperCase();
   return `ROOM-${maskHex}-${seedHex}`;
@@ -216,11 +216,11 @@ function decodeRoomCode(code) {
     const cleanCode = code.trim().toUpperCase().replace("ROOM-", "");
     const parts = cleanCode.split("-");
     if (parts.length !== 2) return null;
-    
+
     const mask = parseInt(parts[0], 16);
     const seed = parseInt(parts[1], 16);
     if (isNaN(mask) || isNaN(seed)) return null;
-    
+
     // Deconstruct bitmask
     const gens = [];
     for (let g = 1; g <= 9; g++) {
@@ -228,23 +228,23 @@ function decodeRoomCode(code) {
         gens.push(g);
       }
     }
-    
+
     const types = [];
     ALL_TYPES_LIST.forEach((t, idx) => {
       if ((mask & (1 << (9 + idx))) !== 0) {
         types.push(t);
       }
     });
-    
+
     const specials = [];
     ALL_SPECIALS_LIST.forEach((s, idx) => {
       if ((mask & (1 << (27 + idx))) !== 0) {
         specials.push(s);
       }
     });
-    
+
     if (gens.length + types.length + specials.length < 6) return null;
-    
+
     return {
       gens,
       types,
@@ -295,10 +295,10 @@ export default function Pokedoku() {
   const [currentTimeElapsed, setCurrentTimeElapsed] = useState("0s");
   const [showHostSuccessModal, setShowHostSuccessModal] = useState(false);
   const [customToast, setCustomToast] = useState(null);
-  
+
   const [playerRole, setPlayerRole] = useState("host"); // 'host' or 'challenger'
   const [currentTurn, setCurrentTurn] = useState("host"); // 'host' or 'challenger'
-  
+
   const showToast = useCallback((message, type = 'info', title = '') => {
     setCustomToast({ message, type, title });
     if (type !== 'error') {
@@ -469,13 +469,13 @@ export default function Pokedoku() {
           setAllowedTypes(decoded.types);
           setAllowedSpecials(decoded.specials);
           customFiltersRef.current = { gens: decoded.gens, types: decoded.types, specials: decoded.specials };
-          
+
           setChallengeRoomCode(room.toUpperCase());
           setIsChallengeActive(true);
           setPlayerRole("challenger");
           setCurrentTurn("host"); // Host always goes first
           setGameMode("unlimited");
-          
+
           // Synthesize grid immediately using the custom room's exact seed
           initGame("unlimited", decoded, decoded.seed);
         } else {
@@ -509,7 +509,7 @@ export default function Pokedoku() {
       const wsHost = typeof window !== "undefined" ? window.location.host : "localhost:3000";
       const wsUrl = `${wsProtocol}//${wsHost}/api/relay`;
       console.log(`[Multiplayer] Connecting to Local Relay (Attempt ${reconnectCount + 1}/${maxReconnectCount}): ${wsUrl}`);
-      
+
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
 
@@ -565,7 +565,7 @@ export default function Pokedoku() {
               setGuessesLeft(nextGuessesLeft);
               setGuessesUsed(prev => prev + 1);
               showToast(`Opponent missed Cell (${r + 1}, ${c + 1})!`, 'error', "Opponent Missed");
-              
+
               // Shake cell
               const cellElement = document.getElementById(`cell-${r}-${c}`);
               if (cellElement) {
@@ -600,16 +600,16 @@ export default function Pokedoku() {
       socket.onclose = (event) => {
         if (isDestroyed) return;
         socketRef.current = null;
-        
+
         if (reconnectCount < maxReconnectCount) {
           const delay = Math.min(1000 * (reconnectCount + 1), 5000);
           console.warn(`WebSocket connection closed. Retrying in ${delay}ms... (Reason: ${event.reason || 'none'})`);
-          
+
           reconnectTimeout = setTimeout(() => {
             reconnectCount++;
             connect();
           }, delay);
-          
+
           if (reconnectCount === 0) {
             showToast("Lobby connection interrupted. Trying to reconnect...", 'info', "Lobby Connection");
           }
@@ -635,7 +635,7 @@ export default function Pokedoku() {
 
   const skipTurn = useCallback(() => {
     if (!isChallengeActive || currentTurn !== playerRole) return;
-    
+
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({
         roomCode: challengeRoomCode,
@@ -877,7 +877,7 @@ export default function Pokedoku() {
           <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight drop-shadow-sm flex items-center justify-center gap-2">
             <FaGamepad className="text-red-500 animate-pulse" /> PokeGrid Arena
           </h1>
-          <p className="text-gray-700 dark:text-gray-300 font-semibold mt-1">
+          <p className="text-white dark:text-gray-300 font-semibold mt-1">
             Fill the 3x3 grid with Pokemon matching row and column conditions in exactly 9 guesses!
           </p>
         </div>
@@ -887,13 +887,13 @@ export default function Pokedoku() {
           <div className="flex rounded-xl overflow-hidden shadow-inner border border-black/5 dark:border-white/5">
             <button
               onClick={() => setGameMode("daily")}
-              className={`px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${gameMode === 'daily' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-200/50 dark:bg-black/20 text-gray-700 dark:text-gray-300 hover:bg-black/5'}`}
+              className={`px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${gameMode === 'daily' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-200/50 dark:bg-black/20 text-white dark:text-gray-300 hover:bg-black/5'}`}
             >
               Daily Battle
             </button>
             <button
               onClick={() => setGameMode("unlimited")}
-              className={`px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${gameMode === 'unlimited' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-200/50 dark:bg-black/20 text-gray-700 dark:text-gray-300 hover:bg-black/5'}`}
+              className={`px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${gameMode === 'unlimited' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-200/50 dark:bg-black/20 text-white dark:text-gray-300 hover:bg-black/5'}`}
             >
               Unlimited Arena
             </button>
@@ -902,7 +902,7 @@ export default function Pokedoku() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowInfo(true)}
-              className="flex items-center gap-1 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-sm font-bold text-white dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
             >
               <FaInfoCircle /> Game Rules
             </button>
@@ -954,10 +954,10 @@ export default function Pokedoku() {
             <h3 className="text-base font-black uppercase tracking-widest text-red-500 mb-2 flex items-center gap-2">
               ⚔️ PokéGrid Battle Arena Duel Lobby
             </h3>
-            <p className="text-xs text-gray-700 dark:text-gray-300 mb-5 font-semibold leading-relaxed">
+            <p className="text-xs text-white dark:text-gray-300 mb-5 font-semibold leading-relaxed">
               Duel in real-time with a fellow Trainer! Host a lobby to generate a shareable challenge link using your current custom category filters, or enter an opponent's room code below to decrypt and load their exact grid seed.
             </p>
-            
+
             {isChallengeActive ? (
               <div className="bg-red-500/5 border border-red-500/20 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-scale-up">
                 <div className="text-left">
@@ -987,14 +987,14 @@ export default function Pokedoku() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                
+
                 {/* Left Side: Host Room */}
                 <div className="bg-white/30 dark:bg-black/35 border border-white/40 dark:border-white/5 p-5 rounded-2xl flex flex-col justify-between items-start text-left shadow-sm animate-scale-up">
                   <div>
                     <h5 className="text-sm font-black text-gray-950 dark:text-white flex items-center gap-1.5 animate-pulse-slow">
                       ⚔️ Host Battle Duel
                     </h5>
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-2 font-semibold leading-relaxed">
+                    <p className="text-[11px] text-white dark:text-gray-400 mt-2 font-semibold leading-relaxed">
                       Generate a custom Battle Room using your current active customizer filters. Opponents will play the exact same category headers and puzzle grid seed in a parallel speed-score match!
                     </p>
                   </div>
@@ -1027,7 +1027,7 @@ export default function Pokedoku() {
                     <h5 className="text-sm font-black text-gray-950 dark:text-white flex items-center gap-1.5">
                       🎮 Join Challenger Room
                     </h5>
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-2 font-semibold leading-relaxed mb-4">
+                    <p className="text-[11px] text-white dark:text-gray-400 mt-2 font-semibold leading-relaxed mb-4">
                       Paste or type a Battle Room Code shared by your friend to automatically decrypt the identical grid layout and duel!
                     </p>
                     <input
@@ -1035,7 +1035,7 @@ export default function Pokedoku() {
                       value={joinCodeInput}
                       onChange={(e) => setJoinCodeInput(e.target.value)}
                       placeholder="e.g. 5A7F8B-E9C"
-                      className="w-full px-4 py-2.5 rounded-xl text-xs font-mono font-bold uppercase border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-center tracking-widest text-sm shadow-inner"
+                      className="w-full px-4 py-2.5 rounded-xl text-sm font-mono font-bold uppercase border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-center tracking-widest text-sm shadow-inner"
                     />
                   </div>
                   <button
@@ -1047,7 +1047,7 @@ export default function Pokedoku() {
                         setAllowedTypes(decoded.types);
                         setAllowedSpecials(decoded.specials);
                         customFiltersRef.current = { gens: decoded.gens, types: decoded.types, specials: decoded.specials };
-                        
+
                         const code = joinCodeInput.trim().toUpperCase().startsWith("ROOM-") ? joinCodeInput.trim().toUpperCase() : `ROOM-${joinCodeInput.trim().toUpperCase()}`;
                         if (typeof window !== "undefined") {
                           const link = `${window.location.origin}${window.location.pathname}?room=${code}`;
@@ -1058,7 +1058,7 @@ export default function Pokedoku() {
                         setPlayerRole("challenger");
                         setCurrentTurn("host"); // Host always goes first
                         setGameMode("unlimited");
-                        
+
                         initGame("unlimited", decoded, decoded.seed);
                         setShowCustomizer(false);
                         setJoinCodeInput("");
@@ -1233,11 +1233,10 @@ export default function Pokedoku() {
           {isChallengeActive ? (
             <div className="flex flex-col items-center justify-center py-3 sm:py-0">
               <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">🎮 Active Turn</span>
-              <span className={`text-lg font-black font-mono tracking-wider ${
-                currentTurn === playerRole
-                  ? 'text-emerald-500 dark:text-emerald-400 animate-pulse'
-                  : 'text-indigo-400 dark:text-indigo-500'
-              }`}>
+              <span className={`text-lg font-black font-mono tracking-wider ${currentTurn === playerRole
+                ? 'text-emerald-500 dark:text-emerald-400 animate-pulse'
+                : 'text-indigo-400 dark:text-indigo-500'
+                }`}>
                 {currentTurn === playerRole ? "👉 Your Turn!" : "⏳ Waiting..."}
               </span>
             </div>
@@ -1662,7 +1661,7 @@ export default function Pokedoku() {
               <h3 className="text-sm font-black uppercase tracking-widest text-red-500 mb-3 flex items-center gap-2">
                 🧠 PokéGrid Solution Log Explorer
               </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4 font-semibold leading-relaxed">
+              <p className="text-xs text-white dark:text-gray-400 mb-4 font-semibold leading-relaxed">
                 {isGameOver ? (
                   <span>🏆 Game Completed! Select any cell coordinate below to view all possible correct answers:</span>
                 ) : (
@@ -1819,7 +1818,7 @@ export default function Pokedoku() {
                 <span className="text-xl font-black text-gray-900 dark:text-white font-mono tracking-widest uppercase bg-black/10 dark:bg-white/5 px-4 py-1.5 rounded-lg border border-black/5 dark:border-white/5">
                   {challengeRoomCode.replace("ROOM-", "")}
                 </span>
-                
+
                 <button
                   onClick={() => {
                     const justCode = challengeRoomCode.replace("ROOM-", "");
@@ -2021,13 +2020,12 @@ export default function Pokedoku() {
         {customToast && (
           <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-slide-down pointer-events-none select-none max-w-sm w-full px-4">
             <div className="bg-white/95 dark:bg-gray-900/95 border border-white/40 dark:border-white/5 shadow-2xl rounded-2xl p-4 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0 ${
-                customToast.type === 'success' 
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                  : customToast.type === 'error'
-                    ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                    : 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20'
-              }`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0 ${customToast.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                : customToast.type === 'error'
+                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                  : 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20'
+                }`}>
                 {customToast.type === 'success' ? '🟩' : customToast.type === 'error' ? '❌' : 'ℹ️'}
               </div>
               <div className="text-left flex-1 min-w-0">
