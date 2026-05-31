@@ -65,6 +65,10 @@ function Home() {
     }
   };
 
+  const triggerSearch = useCallback((query) => {
+    router.push(`/?pokemon=${encodeURIComponent(query)}`, { scroll: false });
+  }, [router]);
+
   const handleSearch = useCallback(async (query) => {
     try {
       setIsLoading(true);
@@ -83,8 +87,6 @@ function Home() {
 
       setPokemon(data);
       setActiveTab('search'); // Switch to search tab when searching
-      // Reflect selection in URL for proper back navigation
-      router.push(`/?pokemon=${encodeURIComponent(query)}`, { scroll: false });
     } catch (err) {
       console.error('Error searching for Pokemon:', err);
       setError('Pokemon not found. Please check the name or ID and try again.');
@@ -94,13 +96,21 @@ function Home() {
       // Hide the quote overlay when the card is ready
       setShowChoose(false);
     }
-  }, [router]);
+  }, []);
 
   // Check for pokemon parameter in URL on change
   useEffect(() => {
+    if (isLoading) return; // Guard against concurrent updates and state cycles while loading
     const pokemonParam = searchParams.get('pokemon');
     if (pokemonParam) {
-      handleSearch(pokemonParam);
+      // Only search if it's not already the loaded pokemon
+      const isAlreadyLoaded = pokemon && (
+        pokemon.name.toLowerCase() === pokemonParam.toLowerCase() ||
+        String(pokemon.id) === pokemonParam
+      );
+      if (!isAlreadyLoaded) {
+        handleSearch(pokemonParam);
+      }
     } else {
       // No query: clear selection and return to browse
       setPokemon(null);
@@ -108,15 +118,11 @@ function Home() {
       setActiveTab('browse');
       restoreBrowseScroll();
     }
-  }, [searchParams, handleSearch]);
+  }, [searchParams, handleSearch, pokemon, isLoading]);
+
   const handleBack = () => {
-    // Move to browse without scrolling and restore position
+    // Clear URL parameters by replacing history, cleanup is handled automatically by the useEffect
     router.replace('/', { scroll: false });
-    setPokemon(null);
-    setError(null);
-    setActiveTab('browse');
-    // Restore after the next frame
-    requestAnimationFrame(() => restoreBrowseScroll());
   };
 
   const handleSelectPokemon = (nameOrId) => {
@@ -126,8 +132,8 @@ function Home() {
         sessionStorage.setItem('browseScrollY', String(browseScrollYRef.current));
         sessionStorage.setItem('browseScrollTarget', `pokemon-${nameOrId}`);
       }
-    } catch {}
-    handleSearch(nameOrId);
+    } catch { }
+    router.push(`/?pokemon=${encodeURIComponent(nameOrId)}`, { scroll: false });
   };
 
   return (
@@ -139,12 +145,12 @@ function Home() {
           <p className="text-center text-gray-700 font-medium mb-8">
             Explore the world of Pokémon, learn about your favorites, and discover new ones!
           </p>
-          
+
           {/* Pokemon Search Component */}
           <ErrorBoundary>
-            <PokemonSearch onSearch={handleSearch} />
+            <PokemonSearch onSearch={triggerSearch} />
           </ErrorBoundary>
-          
+
           {/* Tab Navigation */}
           <div className="flex justify-center mt-8 mb-6">
             <div className="flex rounded-lg overflow-hidden">
@@ -162,7 +168,7 @@ function Home() {
               </button>
             </div>
           </div>
-          
+
           {/* Loading State */}
           {isLoading && activeTab === 'search' && (
             <div className="flex justify-center items-center py-12">
@@ -171,7 +177,7 @@ function Home() {
               <img src="/poke10.png" alt="Loading" className="w-16 h-16 animate-pulse opacity-80" />
             </div>
           )}
-          
+
           {/* Error Message */}
           {error && !isLoading && activeTab === 'search' && (
             <div className="text-center py-8">
@@ -179,42 +185,42 @@ function Home() {
               <p className="mt-2 text-gray-800 font-medium">Try searching for a Pokemon like &quot;pikachu&quot; or by ID number like &quot;25&quot;.</p>
             </div>
           )}
-          
+
           {/* Search Tab Content (kept mounted) */}
           <div className={activeTab === 'search' ? '' : 'hidden'}>
-              {/* Pokemon Card */}
-              {pokemon && !isLoading && !showChoose && (
-                <div className="py-8 animate-fade-in">
-                  <div className="flex justify-center items-center mb-4">
-                    <button
-                      onClick={handleBack}
-                      className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
-                      aria-label="Go back"
-                    >
-                      ← Back
-                    </button>
-                  </div>
-                  <ErrorBoundary>
-                    <PokemonCard pokemon={pokemon} />
-                  </ErrorBoundary>
+            {/* Pokemon Card */}
+            {pokemon && !isLoading && !showChoose && (
+              <div className="py-8 animate-fade-in">
+                <div className="flex justify-center items-center mb-4">
+                  <button
+                    onClick={handleBack}
+                    className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
+                    aria-label="Go back"
+                  >
+                    ← Back
+                  </button>
                 </div>
-              )}
-              
-              {/* Initial State - No Search Yet */}
-              {!pokemon && !error && !isLoading && (
-                <div className="text-center py-12 backdrop-blur-md bg-white/30 rounded-xl shadow-lg">
-                  <h2 className="text-2xl font-semibold mb-4 text-shadow">Search for a Pok\u00E9mon</h2>
-                  <p className="text-gray-800 font-medium mb-6">
-                    Enter a Pok\u00E9mon name (like &quot;Pikachu&quot;) or ID number (like &quot;25&quot;) in the search box above.
-                  </p>
-                  <div className="flex justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/eevee.png" alt="Eevee" className="w-32 h-32 object-contain opacity-70" />
-                  </div>
+                <ErrorBoundary>
+                  <PokemonCard pokemon={pokemon} />
+                </ErrorBoundary>
+              </div>
+            )}
+
+            {/* Initial State - No Search Yet */}
+            {!pokemon && !error && !isLoading && (
+              <div className="text-center py-12 backdrop-blur-md bg-white/30 rounded-xl shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4 text-shadow">Search for a Pokemon</h2>
+                <p className="text-gray-800 font-medium mb-6">
+                  Enter a Pokemon name (like &quot;Pikachu&quot;) or ID number (like &quot;25&quot;) in the search box above.
+                </p>
+                <div className="flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/eevee.png" alt="Eevee" className="w-32 h-32 object-contain opacity-70" />
                 </div>
-              )}
+              </div>
+            )}
           </div>
-          
+
           {/* Browse Tab Content (kept mounted) */}
           <div className={`py-4 ${activeTab === 'browse' ? '' : 'hidden'}`}>
             <div className="lg:hidden mb-4">
@@ -251,7 +257,7 @@ function Home() {
           </div>
         </div>
       </div>
-    <ChooseYouOverlay show={showChoose} text={chooseText} />
+      <ChooseYouOverlay show={showChoose} text={chooseText} />
     </>
   );
 }

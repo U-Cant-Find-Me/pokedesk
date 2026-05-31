@@ -140,13 +140,13 @@ const TYPE_THEMES = {
 };
 
 export default function PokemonCard({ pokemon }) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSpeciesLoading, setIsSpeciesLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [species, setSpecies] = useState(null);
 
   useEffect(() => {
-    if (!pokemon) return;
-    setIsLoading(true);
+    if (!pokemon?.id) return;
+    setIsSpeciesLoading(true);
     setImageError(false);
     setSpecies(null);
 
@@ -154,13 +154,13 @@ export default function PokemonCard({ pokemon }) {
     getPokemonSpecies(pokemon.id)
       .then((data) => {
         setSpecies(data);
-        setIsLoading(false);
+        setIsSpeciesLoading(false);
       })
       .catch((err) => {
         console.error('Error fetching species details:', err);
-        setIsLoading(false);
+        setIsSpeciesLoading(false);
       });
-  }, [pokemon]);
+  }, [pokemon?.id]);
 
   if (!pokemon) return null;
 
@@ -177,13 +177,13 @@ export default function PokemonCard({ pokemon }) {
   } = pokemon;
 
   const formattedId = `#${String(id).padStart(3, '0')}`;
-  const imageUrl = sprites?.other?.['official-artwork']?.front_default || 
-                  sprites?.front_default || 
-                  `/eevee.png`;
+  const imageUrl = sprites?.other?.['official-artwork']?.front_default ||
+    sprites?.front_default ||
+    `/eevee.png`;
 
   const mainType = types?.[0]?.type?.name || 'normal';
   const theme = TYPE_THEMES[mainType] || TYPE_THEMES.normal;
-  
+
   const simplifiedPokemon = {
     id,
     name,
@@ -196,7 +196,7 @@ export default function PokemonCard({ pokemon }) {
     if (!species || !species.flavor_text_entries) return "No data log available for this Pokémon.";
     const englishEntries = species.flavor_text_entries.filter(e => e.language.name === 'en');
     if (englishEntries.length === 0) return "No data log available in English.";
-    
+
     // Clean weird page feed and newline control characters
     return englishEntries[0].flavor_text
       .replace(/\f/g, " ")
@@ -218,186 +218,210 @@ export default function PokemonCard({ pokemon }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto backdrop-blur-md bg-white/40 dark:bg-gray-950/40 rounded-3xl border border-white/50 dark:border-white/5 shadow-2xl overflow-hidden animate-fade-in">
-      {isLoading ? (
-        <div className="flex justify-center items-center h-96">
-          <PokeLoader size={72} label="Decoding Pokédex memory logs..." />
-        </div>
-      ) : (
-        <div className="md:flex">
-          {/* Left Column (Artwork Showcase - larger on desktop now) */}
-          <div className={`md:w-5/12 p-8 flex flex-col justify-center items-center relative border-b md:border-b-0 md:border-r border-black/5 dark:border-white/5 bg-gradient-to-b ${theme.gradient}`}>
-            {/* Holographic overlay */}
-            <div className="absolute inset-0 bg-linear-[135deg,rgba(255,255,255,0.1)_0%,transparent_60%] pointer-events-none" />
-            
-            {/* Favorite Button */}
-            <div className="absolute top-4 left-4 z-10">
-              <FavoriteButton pokemon={simplifiedPokemon} />
-            </div>
+      <div className="md:flex">
+        {/* Left Column (Artwork Showcase - larger on desktop now) */}
+        <div className={`md:w-5/12 p-8 flex flex-col justify-center items-center relative border-b md:border-b-0 md:border-r border-black/5 dark:border-white/5 bg-linear-to-b ${theme.gradient}`}>
+          {/* Holographic overlay */}
+          <div className="absolute inset-0 bg-linear-[135deg,rgba(255,255,255,0.1)_0%,transparent_60%] pointer-events-none" />
 
-            {/* Artwork Wrapper */}
-            <div className="relative w-52 h-52 bg-white/20 dark:bg-black/10 border border-white/30 dark:border-white/10 rounded-full p-4 flex items-center justify-center shadow-lg transition-transform duration-500 hover:scale-105">
-              {!imageError ? (
-                <Image
-                  src={imageUrl}
-                  alt={name}
-                  fill
-                  sizes="(max-width: 208px) 100vw, 208px"
-                  className="object-contain p-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
-                  onError={() => setImageError(true)}
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  <span>Artwork unavailable</span>
-                </div>
-              )}
-            </div>
-
-            <div className="text-center mt-6">
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider">
-                {formattedId}
-              </span>
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white capitalize drop-shadow-sm mt-0.5 tracking-tight">
-                {name}
-              </h2>
-            </div>
+          {/* Favorite Button */}
+          <div className="absolute top-4 left-4 z-10">
+            <FavoriteButton pokemon={simplifiedPokemon} />
           </div>
 
-          {/* Right Column (Detailed stats) */}
-          <div className="p-8 md:w-7/12 flex flex-col justify-between">
-            <div>
-              {/* Type Badges */}
-              <div className="mb-5">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
-                  <FaInfoCircle /> Type Category
-                </h3>
-                <div className="flex gap-2">
-                  {types?.map(({ type }) => {
-                    const typeTheme = TYPE_THEMES[type.name] || TYPE_THEMES.normal;
-                    return (
-                      <span 
-                        key={type.name} 
-                        className={`px-3.5 py-1 rounded-full text-xs font-bold capitalize tracking-wide shadow-sm border border-white/25 ${typeTheme.badge}`}
-                      >
-                        {type.name}
-                      </span>
-                    );
-                  })}
-                </div>
+          {/* Artwork Wrapper */}
+          <div className="relative w-52 h-52 bg-white/20 dark:bg-black/10 border border-white/30 dark:border-white/10 rounded-full p-4 flex items-center justify-center shadow-lg transition-transform duration-500 hover:scale-105">
+            {!imageError ? (
+              <Image
+                src={imageUrl}
+                alt={name}
+                fill
+                sizes="(max-width: 208px) 100vw, 208px"
+                className="object-contain p-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
+                onError={() => setImageError(true)}
+                priority
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                <span>Artwork unavailable</span>
               </div>
+            )}
+          </div>
 
-              {/* Pokedex Flavor text (retro glass text box) */}
-              <div className="mb-5 bg-red-500/5 dark:bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-2xl backdrop-blur-sm relative">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1 flex items-center gap-1">
-                  <FaBookOpen /> Pokédex Entry Log
-                </h3>
+          <div className="text-center mt-6">
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider">
+              {formattedId}
+            </span>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white capitalize drop-shadow-sm mt-0.5 tracking-tight">
+              {name}
+            </h2>
+          </div>
+        </div>
+
+        {/* Right Column (Detailed stats) */}
+        <div className="p-8 md:w-7/12 flex flex-col justify-between">
+          <div>
+            {/* Type Badges */}
+            <div className="mb-5">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
+                <FaInfoCircle /> Type Category
+              </h3>
+              <div className="flex gap-2">
+                {types?.map(({ type }) => {
+                  const typeTheme = TYPE_THEMES[type.name] || TYPE_THEMES.normal;
+                  return (
+                    <span
+                      key={type.name}
+                      className={`px-3.5 py-1 rounded-full text-xs font-bold capitalize tracking-wide shadow-sm border border-white/25 ${typeTheme.badge}`}
+                    >
+                      {type.name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pokedex Flavor text (retro glass text box) */}
+            <div className="mb-5 bg-red-500/5 dark:bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-2xl backdrop-blur-sm relative">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1 flex items-center gap-1">
+                <FaBookOpen /> Pokédex Entry Log
+              </h3>
+              {isSpeciesLoading ? (
+                <div className="animate-pulse flex flex-col gap-2 mt-1.5">
+                  <div className="h-4 bg-red-500/10 dark:bg-red-500/20 rounded w-11/12"></div>
+                  <div className="h-4 bg-red-500/10 dark:bg-red-500/20 rounded w-8/12"></div>
+                </div>
+              ) : (
                 <p className="text-gray-800 dark:text-gray-200 text-sm font-medium italic leading-relaxed">
                   &ldquo;{pokedexDescription}&rdquo;
                 </p>
-              </div>
+              )}
+            </div>
 
-              {/* Breeding, Training & Species info grid (fills empty space beautifully) */}
-              {breedingInfo && (
-                <div className="mb-5">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
-                    🧬 Breeding & Training
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 bg-white/25 dark:bg-black/10 border border-black/5 dark:border-white/5 p-4 rounded-2xl text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] uppercase font-bold text-gray-400">Habitat</span>
-                      <span className="capitalize text-gray-900 dark:text-white">{breedingInfo.habitat}</span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] uppercase font-bold text-gray-400">Base Experience</span>
-                      <span className="text-gray-900 dark:text-white">{breedingInfo.baseExperience}</span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] uppercase font-bold text-gray-400">Capture Rate</span>
-                      <span className="text-gray-900 dark:text-white">{breedingInfo.captureRate} <span className="text-[10px] font-medium text-gray-400">({((breedingInfo.captureRate / 255) * 100).toFixed(0)}%)</span></span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[10px] uppercase font-bold text-gray-400">Egg Groups</span>
-                      <span className="capitalize text-gray-900 dark:text-white truncate">{breedingInfo.eggGroups}</span>
-                    </div>
+            {/* Breeding, Training & Species info grid (fills empty space beautifully) */}
+            <div className="mb-5">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
+                🧬 Breeding & Training
+              </h3>
+              {isSpeciesLoading ? (
+                <div className="grid grid-cols-2 gap-4 bg-white/25 dark:bg-black/10 border border-black/5 dark:border-white/5 p-4 rounded-2xl animate-pulse">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400/50">Habitat</span>
+                    <div className="h-4 bg-black/5 dark:bg-white/5 rounded w-16"></div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400/50">Base Experience</span>
+                    <div className="h-4 bg-black/5 dark:bg-white/5 rounded w-12"></div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400/50">Capture Rate</span>
+                    <div className="h-4 bg-black/5 dark:bg-white/5 rounded w-20"></div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400/50">Egg Groups</span>
+                    <div className="h-4 bg-black/5 dark:bg-white/5 rounded w-24"></div>
                   </div>
                 </div>
+              ) : breedingInfo ? (
+                <div className="grid grid-cols-2 gap-3 bg-white/25 dark:bg-black/10 border border-black/5 dark:border-white/5 p-4 rounded-2xl text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Habitat</span>
+                    <span className="capitalize text-gray-900 dark:text-white">{breedingInfo.habitat}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Base Experience</span>
+                    <span className="text-gray-900 dark:text-white">{breedingInfo.baseExperience}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Capture Rate</span>
+                    <span className="text-gray-900 dark:text-white">{breedingInfo.captureRate} <span className="text-[10px] font-medium text-gray-400">({((breedingInfo.captureRate / 255) * 100).toFixed(0)}%)</span></span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Egg Groups</span>
+                    <span className="capitalize text-gray-900 dark:text-white truncate">{breedingInfo.eggGroups}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 bg-white/25 dark:bg-black/10 border border-black/5 dark:border-white/5 rounded-2xl text-xs font-semibold text-gray-400">
+                  Breeding data unavailable.
+                </div>
               )}
+            </div>
 
-              {/* Physical details grid */}
-              <div className="grid grid-cols-2 gap-4 mb-5 bg-white/25 dark:bg-black/10 p-3 rounded-2xl border border-black/5 dark:border-white/5 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                <div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">Height</h3>
-                  <p className="text-gray-900 dark:text-white font-extrabold text-base">{(height / 10).toFixed(1)} <span className="text-xs font-medium text-gray-500">m</span></p>
-                </div>
-                <div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">Weight</h3>
-                  <p className="text-gray-900 dark:text-white font-extrabold text-base">{(weight / 10).toFixed(1)} <span className="text-xs font-medium text-gray-500">kg</span></p>
-                </div>
+            {/* Physical details grid */}
+            <div className="grid grid-cols-2 gap-4 mb-5 bg-white/25 dark:bg-black/10 p-3 rounded-2xl border border-black/5 dark:border-white/5 text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">Height</h3>
+                <p className="text-gray-900 dark:text-white font-extrabold text-base">{(height / 10).toFixed(1)} <span className="text-xs font-medium text-gray-500">m</span></p>
               </div>
-
-              {/* Abilities */}
-              <div className="mb-5">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
-                  ⚔️ Abilities
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {abilities?.map(({ ability, is_hidden }) => (
-                    <span 
-                      key={ability.name} 
-                      className="bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/10 px-3 py-1 rounded-xl text-gray-800 dark:text-gray-200 text-xs font-semibold capitalize tracking-wide shadow-sm"
-                    >
-                      {ability.name.replace("-", " ")} {is_hidden && <span className="text-[10px] font-bold text-red-500 dark:text-red-400 font-mono ml-0.5">(Hidden)</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Base Stats Progress bars */}
-              <div className="mb-6">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 flex items-center gap-1">
-                  📊 Combat Base Stats
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
-                  {stats?.map((stat) => {
-                    let statName = stat.stat.name;
-                    if (statName === 'hp') statName = 'HP';
-                    else if (statName === 'attack') statName = 'Attack';
-                    else if (statName === 'defense') statName = 'Defense';
-                    else if (statName === 'special-attack') statName = 'Sp. Atk';
-                    else if (statName === 'special-defense') statName = 'Sp. Def';
-                    else if (statName === 'speed') statName = 'Speed';
-                    else statName = statName.replace('-', ' ');
-
-                    const percentage = Math.min(100, (stat.base_stat / 255) * 100);
-                    
-                    return (
-                      <div key={stat.stat.name} className="flex flex-col gap-0.5">
-                        <div className="flex justify-between items-center text-xs font-bold px-0.5">
-                          <span className="text-gray-700 dark:text-gray-300">{statName}</span>
-                          <span className="text-gray-900 dark:text-white font-black">{stat.base_stat}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 p-0.5">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-500 ${theme.barColor}`} 
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">Weight</h3>
+                <p className="text-gray-900 dark:text-white font-extrabold text-base">{(weight / 10).toFixed(1)} <span className="text-xs font-medium text-gray-500">kg</span></p>
               </div>
             </div>
 
-            {/* Evolution Chain Component */}
-            <div className="border-t border-black/5 dark:border-white/5 pt-5">
-              <ErrorBoundary>
-                <EvolutionChain name={name} />
-              </ErrorBoundary>
+            {/* Abilities */}
+            <div className="mb-5">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 flex items-center gap-1">
+                ⚔️ Abilities
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {abilities?.map(({ ability, is_hidden }) => (
+                  <span
+                    key={ability.name}
+                    className="bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/10 px-3 py-1 rounded-xl text-gray-800 dark:text-gray-200 text-xs font-semibold capitalize tracking-wide shadow-sm"
+                  >
+                    {ability.name.replace("-", " ")} {is_hidden && <span className="text-[10px] font-bold text-red-500 dark:text-red-400 font-mono ml-0.5">(Hidden)</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Base Stats Progress bars */}
+            <div className="mb-6">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 flex items-center gap-1">
+                📊 Combat Base Stats
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+                {stats?.map((stat) => {
+                  let statName = stat.stat.name;
+                  if (statName === 'hp') statName = 'HP';
+                  else if (statName === 'attack') statName = 'Attack';
+                  else if (statName === 'defense') statName = 'Defense';
+                  else if (statName === 'special-attack') statName = 'Sp. Atk';
+                  else if (statName === 'special-defense') statName = 'Sp. Def';
+                  else if (statName === 'speed') statName = 'Speed';
+                  else statName = statName.replace('-', ' ');
+
+                  const percentage = Math.min(100, (stat.base_stat / 255) * 100);
+
+                  return (
+                    <div key={stat.stat.name} className="flex flex-col gap-0.5">
+                      <div className="flex justify-between items-center text-xs font-bold px-0.5">
+                        <span className="text-white dark:text-gray-300">{statName}</span>
+                        <span className="text-white dark:text-white font-black">{stat.base_stat}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 p-0.5">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${theme.barColor}`}
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
+
+          {/* Evolution Chain Component */}
+          <div className="border-t border-black/5 dark:border-white/5 pt-5">
+            <ErrorBoundary>
+              <EvolutionChain name={name} />
+            </ErrorBoundary>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

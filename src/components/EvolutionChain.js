@@ -36,7 +36,7 @@ export default function EvolutionChain({ name }) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-blue-950 text-lg font-semibold mb-3">Evolution Chain</h3>
+      <h3 className="text-white text-lg font-semibold mb-3">Evolution Chain</h3>
       <div className="flex flex-wrap items-center gap-3">
         {chain.map((node, idx) => {
           const sprite = node.id
@@ -52,9 +52,9 @@ export default function EvolutionChain({ name }) {
                     <div className="w-10 h-10 bg-gray-200 rounded" />
                   )}
                 </div>
-                <span className="capitalize text-gray-800">{node.name}</span>
+                <span className="capitalize text-white">{node.name}</span>
               </Link>
-              {idx < chain.length - 1 && <span className="text-gray-500">→</span>}
+              {idx < chain.length - 1 && <span className="text-white">→</span>}
             </div>
           );
         })}

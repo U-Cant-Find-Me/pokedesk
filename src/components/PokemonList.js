@@ -128,7 +128,7 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
   // Compute filtered and sorted Pokemon list instantly client-side using useMemo
   const filteredAndSortedList = useMemo(() => {
     const list = pokemonDataset || [];
-    
+
     // 1) Apply Filters
     const filtered = list.filter((p) => {
       // Type filter
@@ -204,7 +204,7 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
   const setupObserver = useCallback(() => {
     if (!sentinelRef.current) return;
     if (observer.current) observer.current.disconnect();
-    
+
     observer.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -242,7 +242,7 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white drop-shadow-sm">
           Browse Pokémon
         </h2>
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-900/50 backdrop-blur px-3 py-1 rounded-full border border-black/5 dark:border-white/5 mt-2 md:mt-0">
+        <span className="text-sm font-medium text-pink-500 dark:text-gray-400 bg-white/50 dark:bg-gray-900/50 backdrop-blur px-3 py-1 rounded-full border border-black/5 dark:border-white/5 mt-2 md:mt-0">
           Showing {filteredAndSortedList.length} of {pokemonDataset.length} results
         </span>
       </div>
@@ -252,8 +252,8 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
           <p className="text-gray-800 dark:text-gray-200 text-lg font-medium mb-4">
             No Pokémon matches your active filters.
           </p>
-          <div className="flex justify-center">
-            <Image src="/eevee.png" alt="Eevee sad" width={100} height={100} className="opacity-40 animate-bounce" />
+          <div className="w-full flex justify-center">
+            <Image src="/eevee.png" alt="Eevee sad" width={100} height={100} className="w-full h-1/4 opacity-40 animate-bounce" />
           </div>
         </div>
       ) : (
@@ -273,28 +273,28 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
               };
 
               return (
-                <div 
-                  key={pokemon.id} 
+                <div
+                  key={pokemon.id}
                   id={`pokemon-${pokemon.name}`}
                   className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-gradient-to-br ${theme.gradient} ${theme.glow} shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl backdrop-blur-md`}
                 >
                   {/* Subtle holographic diagonal glare */}
                   <div className="absolute inset-0 bg-linear-[135deg,rgba(255,255,255,0.15)_0%,transparent_50%,rgba(0,0,0,0.05)_100%] pointer-events-none z-0" />
-                  
+
                   {/* Favorite Button */}
                   <div className="absolute top-3 right-3 z-10">
                     <FavoriteButton pokemon={simplifiedPokemon} />
                   </div>
 
-                  <div 
-                    className="p-5 text-center cursor-pointer flex-grow flex flex-col justify-between"
+                  <div
+                    className="p-5 text-center cursor-pointer grow flex flex-col justify-between"
                     onClick={() => onSelectPokemon(pokemon.name)}
                   >
                     {/* Sprite Image Container */}
                     <div className="relative w-36 h-36 mx-auto mb-4 bg-white/20 dark:bg-black/10 rounded-full p-2 border border-white/30 dark:border-white/10 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
                       {pokemon.sprite ? (
-                        <Image 
-                          src={pokemon.sprite} 
+                        <Image
+                          src={pokemon.sprite}
                           alt={pokemon.name}
                           fill
                           sizes="(max-width: 144px) 100vw, 144px"
@@ -308,7 +308,7 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
 
                     {/* ID & Name */}
                     <div className="relative z-10">
-                      <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 tracking-wider">
+                      <p className="text-xs font-semibold text-white dark:text-white tracking-wider">
                         {formattedId}
                       </p>
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white capitalize truncate drop-shadow-sm mt-0.5">
@@ -321,8 +321,8 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
                       {pokemon.types.map((type) => {
                         const typeTheme = TYPE_THEMES[type] || TYPE_THEMES.normal;
                         return (
-                          <span 
-                            key={type} 
+                          <span
+                            key={type}
                             className={`px-3 py-1 rounded-full text-xs font-bold capitalize tracking-wide shadow-sm border border-white/25 ${typeTheme.badge}`}
                           >
                             {type}
@@ -332,17 +332,17 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
                     </div>
 
                     {/* Quick Stats Summary Footer */}
-                    <div className="grid grid-cols-3 gap-1 border-t border-black/5 dark:border-white/5 mt-4 pt-3 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                    <div className="grid grid-cols-3 gap-1 border-t border-black/5 dark:border-white/5 mt-4 pt-3 text-[10px] font-bold uppercase tracking-wider text-white dark:text-gray-400">
                       <div>
-                        <div className="text-gray-900 dark:text-white text-xs">{pokemon.stats.hp}</div>
+                        <div className="text-white dark:text-white text-xs">{pokemon.stats.hp}</div>
                         HP
                       </div>
                       <div>
-                        <div className="text-gray-900 dark:text-white text-xs">{pokemon.stats.attack}</div>
+                        <div className="text-white dark:text-white text-xs">{pokemon.stats.attack}</div>
                         ATK
                       </div>
                       <div>
-                        <div className="text-gray-900 dark:text-white text-xs">{pokemon.stats.speed}</div>
+                        <div className="text-white dark:text-white text-xs">{pokemon.stats.speed}</div>
                         SPD
                       </div>
                     </div>
@@ -368,8 +368,8 @@ export default function PokemonList({ onSelectPokemon, filters = {}, sort = 'num
               <p className="text-gray-600 dark:text-gray-400 font-medium">
                 ✨ You&apos;ve completely explored the entire Pokédex! ✨
               </p>
-              <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="mt-4 px-6 py-2 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all duration-300 shadow-md shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5"
               >
                 Back to Top

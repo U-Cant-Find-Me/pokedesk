@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PokeLoader from "@/components/PokeLoader";
+import BackgroundCarousel from "@/components/BackgroundCarousel";
 import { getPokemon } from "@/services/pokemonService";
 import pokemonDataset from "@/data/pokemon-dataset.json";
 
@@ -270,7 +271,9 @@ export default function ComparePage() {
   const rightBst = right ? right.stats.reduce((sum, s) => sum + s.base_stat, 0) : 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-4 max-w-5xl">
+    <>
+      <BackgroundCarousel />
+      <div className="container mx-auto px-4 py-8 mt-20 max-w-5xl">
       <h1 className="text-3xl font-extrabold mb-2 text-center text-gray-900 dark:text-white tracking-tight drop-shadow-sm">
         Pokémon Versus Arena
       </h1>
@@ -523,5 +526,6 @@ export default function ComparePage() {
         </div>
       )}
     </div>
+    </>
   );
 }
