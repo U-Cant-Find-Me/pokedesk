@@ -66,8 +66,17 @@ function Home() {
   };
 
   const triggerSearch = useCallback((query) => {
-    router.push(`/?pokemon=${encodeURIComponent(query)}`, { scroll: false });
-  }, [router]);
+    const capitalized = String(query).trim().toLowerCase();
+    const isAlreadyLoaded = pokemon && (
+      pokemon.name.toLowerCase() === capitalized ||
+      String(pokemon.id) === capitalized
+    );
+    if (isAlreadyLoaded) {
+      setActiveTab('search');
+    } else {
+      router.push(`/?pokemon=${encodeURIComponent(query)}`, { scroll: false });
+    }
+  }, [router, pokemon]);
 
   const handleSearch = useCallback(async (query) => {
     try {
@@ -110,6 +119,8 @@ function Home() {
       );
       if (!isAlreadyLoaded) {
         handleSearch(pokemonParam);
+      } else {
+        setActiveTab('search'); // Switch to search tab if already loaded
       }
     } else {
       // No query: clear selection and return to browse
@@ -133,7 +144,17 @@ function Home() {
         sessionStorage.setItem('browseScrollTarget', `pokemon-${nameOrId}`);
       }
     } catch { }
-    router.push(`/?pokemon=${encodeURIComponent(nameOrId)}`, { scroll: false });
+
+    const capitalized = String(nameOrId).trim().toLowerCase();
+    const isAlreadyLoaded = pokemon && (
+      pokemon.name.toLowerCase() === capitalized ||
+      String(pokemon.id) === capitalized
+    );
+    if (isAlreadyLoaded) {
+      setActiveTab('search');
+    } else {
+      router.push(`/?pokemon=${encodeURIComponent(nameOrId)}`, { scroll: false });
+    }
   };
 
   return (
